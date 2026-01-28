@@ -224,6 +224,41 @@ img.onload = () => {
 img.src = svgDataUrl
 ```
 
+#### Font Loading Considerations for PNG Export
+
+When exporting SVGs with custom web fonts to PNG via canvas, fonts may not render correctly because:
+
+1. **External fonts may not be loaded** when the canvas draws the SVG
+2. **Cross-origin restrictions** can prevent font loading in some browsers
+
+**Solutions:**
+
+1. **Wait for fonts to load** before exporting:
+```javascript
+// Ensure fonts are loaded before PNG export
+await document.fonts.ready
+// Or wait for specific fonts:
+await document.fonts.load('700 42px Lora')
+await document.fonts.load('400 12px "Lexend Deca"')
+```
+
+2. **Preload fonts** in your HTML:
+```html
+<link rel="preload" href="https://fonts.gstatic.com/s/lora/..." as="font" crossorigin>
+```
+
+3. **Inline fonts as base64** in the SVG for fully self-contained export:
+```javascript
+// Convert font to base64 and embed in SVG style
+const fontBase64 = await fetchFontAsBase64(fontUrl)
+svg.append('style').text(`@font-face { font-family: 'Lora'; src: url(${fontBase64}); }`)
+```
+
+4. **Use system fonts as fallback** in your font-family declarations:
+```javascript
+fontFamily: "'Lora', Georgia, 'Times New Roman', serif"
+```
+
 ## Font Loading
 
 For branded fonts to render correctly, include the Google Fonts import:

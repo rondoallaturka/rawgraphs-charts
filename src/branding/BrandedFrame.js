@@ -13,6 +13,9 @@
 import * as d3 from 'd3'
 import '../d3-styles.js'
 
+// Counter for generating unique IDs (avoids collisions with Math.random)
+let clipIdCounter = 0
+
 /**
  * Default branded frame configuration
  */
@@ -159,7 +162,7 @@ export function createBrandedFrame(config = {}) {
 
     // Create circular clip path if borderRadius is set
     if (cfg.flag.borderRadius) {
-      const clipId = 'flag-clip-' + Math.random().toString(36).substr(2, 9)
+      const clipId = `flag-clip-${clipIdCounter++}`
       svg.append('defs')
         .append('clipPath')
         .attr('id', clipId)
@@ -204,7 +207,9 @@ export function createBrandedFrame(config = {}) {
 
     // Calculate legend height based on content
     const itemHeight = 24
-    const titleHeight = cfg.legend.title ? 30 : 0
+    const titleLineHeight = 18
+    const titleLines = cfg.legend.title ? cfg.legend.title.split('\n') : []
+    const titleHeight = titleLines.length > 0 ? (titleLines.length * titleLineHeight) + 10 : 0
     const legendHeight = cfg.legend.padding * 2 + titleHeight + (cfg.legend.items.length * itemHeight)
 
     // Background
@@ -216,16 +221,22 @@ export function createBrandedFrame(config = {}) {
       .attr('stroke-width', 1)
       .attr('rx', cfg.legend.borderRadius)
 
-    // Title
+    // Title (with multi-line support using tspan)
     if (cfg.legend.title) {
-      legendGroup.append('text')
+      const titleText = legendGroup.append('text')
         .attr('x', cfg.legend.padding)
         .attr('y', cfg.legend.padding + 14)
         .style('font-family', "'Lexend Deca', sans-serif")
         .style('font-size', '12px')
         .style('font-weight', 600)
         .style('fill', '#2d3748')
-        .text(cfg.legend.title)
+
+      titleLines.forEach((line, i) => {
+        titleText.append('tspan')
+          .attr('x', cfg.legend.padding)
+          .attr('dy', i === 0 ? 0 : '1.4em')
+          .text(line)
+      })
     }
 
     // Legend items
