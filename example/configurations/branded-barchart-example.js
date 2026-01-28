@@ -102,17 +102,12 @@ export const frameConfig = {
 
   logos: [
     {
-      url: 'latinometrics-logo.svg',
-      width: 150,
-      height: 30,
+      // Logo file should be placed in example/assets/latinometrics-logo.png
+      // PNG format is supported via SVG <image> element
+      url: '../assets/latinometrics-logo.png',
+      width: 180,
+      height: 40,
       x: null, // Auto-position
-      y: null,
-    },
-    {
-      url: 'siemens-logo.svg',
-      width: 100,
-      height: 30,
-      x: null,
       y: null,
     },
   ],

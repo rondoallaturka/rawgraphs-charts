@@ -169,6 +169,220 @@ barchart.render(chartContainer, data, visualOptions, mapping, originalData, bran
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script>
+    // ============================================================
+    // Inline BrandedFrame module (mirrors src/branding/BrandedFrame.js)
+    // In production, import from '@rawgraphs/rawgraphs-charts/branding'
+    // ============================================================
+
+    let clipIdCounter = 0
+
+    /**
+     * Create a branded frame SVG element
+     * This is a simplified inline version of the library's createBrandedFrame function
+     */
+    function createBrandedFrame(config = {}) {
+      const defaults = {
+        width: 1080,
+        height: 1080,
+        padding: { top: 140, right: 40, bottom: 120, left: 40 },
+        background: '#FAF5F0',
+        title: { text: '', x: 40, y: 50, style: { fontFamily: "'Lora', Georgia, serif", fontSize: 42, fontWeight: 700, fill: '#1a3a5c' } },
+        subtitle: { text: '', x: 40, y: 100, style: { fontFamily: "'Lexend Deca', sans-serif", fontSize: 16, fontWeight: 400, fill: '#4a5568' } },
+        flag: { show: false, url: '', x: null, y: 40, width: 50, height: 50, borderRadius: 25 },
+        sources: { text: '', x: 40, y: null, style: { fontFamily: "'Lexend Deca', sans-serif", fontSize: 12, fontWeight: 400, fill: '#718096' } },
+        logos: [],
+        legend: { show: false, x: null, y: null, width: 280, padding: 15, background: 'white', borderRadius: 4, border: '#e2e8f0', title: '', items: [] },
+      }
+
+      const cfg = { ...defaults, ...config }
+      cfg.padding = { ...defaults.padding, ...config.padding }
+      cfg.title = { ...defaults.title, ...config.title, style: { ...defaults.title.style, ...(config.title?.style || {}) } }
+      cfg.sources = { ...defaults.sources, ...config.sources, style: { ...defaults.sources.style, ...(config.sources?.style || {}) } }
+      cfg.flag = { ...defaults.flag, ...config.flag }
+      cfg.legend = { ...defaults.legend, ...config.legend }
+
+      // Create SVG
+      const svg = d3.create('svg')
+        .attr('xmlns', 'http://www.w3.org/2000/svg')
+        .attr('width', cfg.width)
+        .attr('height', cfg.height)
+        .attr('viewBox', `0 0 ${cfg.width} ${cfg.height}`)
+
+      // Add font import
+      svg.append('style')
+        .text("@import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600&family=Lora:wght@400;500;600;700&display=swap');")
+
+      // Background
+      svg.append('rect')
+        .attr('id', 'frame-background')
+        .attr('width', cfg.width)
+        .attr('height', cfg.height)
+        .attr('fill', cfg.background)
+
+      // Title (with multi-line support)
+      if (cfg.title.text) {
+        const titleGroup = svg.append('g').attr('id', 'title-group')
+        const titleLines = cfg.title.text.split('\n')
+        const lineHeight = cfg.title.style.fontSize * 1.2
+
+        titleLines.forEach((line, i) => {
+          titleGroup.append('text')
+            .attr('class', 'chart-title')
+            .attr('x', cfg.title.x)
+            .attr('y', cfg.title.y + (i * lineHeight))
+            .style('font-family', cfg.title.style.fontFamily)
+            .style('font-size', `${cfg.title.style.fontSize}px`)
+            .style('font-weight', cfg.title.style.fontWeight)
+            .style('fill', cfg.title.style.fill)
+            .text(line)
+        })
+      }
+
+      // Flag/icon
+      if (cfg.flag.show && cfg.flag.url) {
+        const flagX = cfg.flag.x !== null ? cfg.flag.x : cfg.width - cfg.padding.right - cfg.flag.width
+        const flagGroup = svg.append('g')
+          .attr('id', 'flag-group')
+          .attr('transform', `translate(${flagX}, ${cfg.flag.y})`)
+
+        if (cfg.flag.borderRadius) {
+          const clipId = `flag-clip-${clipIdCounter++}`
+          svg.append('defs')
+            .append('clipPath')
+            .attr('id', clipId)
+            .append('circle')
+            .attr('cx', cfg.flag.width / 2)
+            .attr('cy', cfg.flag.height / 2)
+            .attr('r', cfg.flag.borderRadius)
+
+          flagGroup.append('image')
+            .attr('href', cfg.flag.url)
+            .attr('width', cfg.flag.width)
+            .attr('height', cfg.flag.height)
+            .attr('clip-path', `url(#${clipId})`)
+        } else {
+          flagGroup.append('image')
+            .attr('href', cfg.flag.url)
+            .attr('width', cfg.flag.width)
+            .attr('height', cfg.flag.height)
+        }
+      }
+
+      // Chart container
+      const chartX = cfg.padding.left
+      const chartY = cfg.padding.top
+      const chartWidth = cfg.width - cfg.padding.left - cfg.padding.right
+      const chartHeight = cfg.height - cfg.padding.top - cfg.padding.bottom
+
+      svg.append('g')
+        .attr('id', 'chart-container')
+        .attr('transform', `translate(${chartX}, ${chartY})`)
+        .attr('data-width', chartWidth)
+        .attr('data-height', chartHeight)
+
+      // Legend box (with multi-line title support)
+      if (cfg.legend.show && cfg.legend.items.length > 0) {
+        const legendX = cfg.legend.x !== null ? cfg.legend.x : cfg.width - cfg.padding.right - cfg.legend.width - 20
+        const legendY = cfg.legend.y !== null ? cfg.legend.y : cfg.height - cfg.padding.bottom - 100
+
+        const legendGroup = svg.append('g')
+          .attr('id', 'legend-box')
+          .attr('transform', `translate(${legendX}, ${legendY})`)
+
+        const itemHeight = 24
+        const titleLineHeight = 18
+        const titleLines = cfg.legend.title ? cfg.legend.title.split('\n') : []
+        const titleHeight = titleLines.length > 0 ? (titleLines.length * titleLineHeight) + 10 : 0
+        const legendHeight = cfg.legend.padding * 2 + titleHeight + (cfg.legend.items.length * itemHeight)
+
+        // Background
+        legendGroup.append('rect')
+          .attr('width', cfg.legend.width)
+          .attr('height', legendHeight)
+          .attr('fill', cfg.legend.background)
+          .attr('stroke', cfg.legend.border)
+          .attr('stroke-width', 1)
+          .attr('rx', cfg.legend.borderRadius)
+
+        // Title with tspan for multi-line
+        if (cfg.legend.title) {
+          const titleText = legendGroup.append('text')
+            .attr('x', cfg.legend.padding)
+            .attr('y', cfg.legend.padding + 14)
+            .style('font-family', "'Lexend Deca', sans-serif")
+            .style('font-size', '12px')
+            .style('font-weight', 600)
+            .style('fill', '#2d3748')
+
+          titleLines.forEach((line, i) => {
+            titleText.append('tspan')
+              .attr('x', cfg.legend.padding)
+              .attr('dy', i === 0 ? 0 : '1.4em')
+              .text(line)
+          })
+        }
+
+        // Legend items
+        const itemsGroup = legendGroup.append('g')
+          .attr('transform', `translate(${cfg.legend.padding}, ${cfg.legend.padding + titleHeight})`)
+
+        cfg.legend.items.forEach((item, i) => {
+          const itemG = itemsGroup.append('g')
+            .attr('transform', `translate(0, ${i * itemHeight})`)
+
+          itemG.append('rect')
+            .attr('width', 30)
+            .attr('height', 12)
+            .attr('y', 2)
+            .attr('fill', item.color)
+            .attr('rx', 2)
+
+          itemG.append('text')
+            .attr('x', 40)
+            .attr('y', 12)
+            .style('font-family', "'Lexend Deca', sans-serif")
+            .style('font-size', '11px')
+            .style('fill', '#4a5568')
+            .text(item.label)
+        })
+      }
+
+      // Sources
+      if (cfg.sources.text) {
+        const sourcesY = cfg.sources.y !== null ? cfg.sources.y : cfg.height - 50
+        svg.append('text')
+          .attr('id', 'sources-text')
+          .attr('x', cfg.sources.x)
+          .attr('y', sourcesY)
+          .style('font-family', cfg.sources.style.fontFamily)
+          .style('font-size', `${cfg.sources.style.fontSize}px`)
+          .style('font-weight', cfg.sources.style.fontWeight)
+          .style('fill', cfg.sources.style.fill)
+          .text(cfg.sources.text)
+      }
+
+      // Logos
+      if (cfg.logos && cfg.logos.length > 0) {
+        const logosGroup = svg.append('g').attr('id', 'logos-group')
+        cfg.logos.forEach((logo) => {
+          const logoX = logo.x !== null ? logo.x : cfg.width - cfg.padding.right - logo.width
+          const logoY = logo.y !== null ? logo.y : cfg.height - 45
+          logosGroup.append('image')
+            .attr('href', logo.url)
+            .attr('x', logoX)
+            .attr('y', logoY)
+            .attr('width', logo.width)
+            .attr('height', logo.height || 'auto')
+        })
+      }
+
+      return svg.node()
+    }
+
+    // ============================================================
+    // Demo data and configuration
+    // ============================================================
+
     // Sample data for the chart
     const data = [
       { sector: 'Bebidas y tabaco', small: 9, large: 33 },
@@ -206,87 +420,67 @@ barchart.render(chartContainer, data, visualOptions, mapping, originalData, bran
       textLight: '#718096',
     }
 
-    // Render the branded chart
-    function renderBrandedChart() {
-      const svg = d3.select('#branded-chart')
-      const width = 1080
-      const height = 1080
+    // Frame configuration using the library pattern
+    const frameConfig = {
+      width: 1080,
+      height: 1080,
+      padding: { top: 150, right: 360, bottom: 80, left: 40 },
+      background: colors.background,
 
-      // Clear existing content
-      svg.selectAll('*').remove()
+      title: {
+        text: 'Sectores manufactureros\nimpulsando la IA en México',
+        x: 40,
+        y: 55,
+        style: {
+          fontFamily: "'Lora', Georgia, serif",
+          fontSize: 42,
+          fontWeight: 700,
+          fill: colors.text,
+        },
+      },
 
-      // Add font import
-      svg.append('defs').append('style')
-        .text("@import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600&family=Lora:wght@400;500;600;700&display=swap');")
+      flag: {
+        show: true,
+        url: 'https://flagcdn.com/w80/mx.png',
+        y: 40,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+      },
 
-      // Background
-      svg.append('rect')
-        .attr('width', width)
-        .attr('height', height)
-        .attr('fill', colors.background)
+      sources: {
+        text: 'Fuentes: INEGI, Eurostat',
+        x: 40,
+        style: { fill: colors.textLight },
+      },
 
-      // Title (Lora font)
-      const titleGroup = svg.append('g').attr('id', 'title')
+      logos: [
+        { url: 'assets/latinometrics-logo.png', width: 180, height: 40, x: 760, y: 1025 },
+      ],
 
-      titleGroup.append('text')
-        .attr('x', 40)
-        .attr('y', 55)
-        .style('font-family', "'Lora', Georgia, serif")
-        .style('font-size', '42px')
-        .style('font-weight', '700')
-        .style('fill', colors.text)
-        .text('Sectores manufactureros')
+      legend: {
+        show: true,
+        x: 740,
+        y: 620,
+        width: 300,
+        padding: 15,
+        background: 'white',
+        borderRadius: 4,
+        border: '#e2e8f0',
+        title: 'Adopción de IA en los\nsubsectores manufactureros\nde México\n(encuesta de 2024)',
+        items: [
+          { color: colors.primary, label: 'Empresas con 11 a 250 empleados' },
+          { color: colors.accent, label: 'Empresas con más de 250 empleados' },
+        ],
+      },
+    }
 
-      titleGroup.append('text')
-        .attr('x', 40)
-        .attr('y', 105)
-        .style('font-family', "'Lora', Georgia, serif")
-        .style('font-size', '42px')
-        .style('font-weight', '700')
-        .style('fill', colors.text)
-        .text('impulsando la IA en México')
-
-      // Flag icon placeholder (circle with flag colors)
-      const flagGroup = svg.append('g')
-        .attr('transform', `translate(${width - 90}, 40)`)
-
-      // Simple Mexico flag representation
-      flagGroup.append('circle')
-        .attr('cx', 25)
-        .attr('cy', 25)
-        .attr('r', 25)
-        .attr('fill', '#f0f0f0')
-        .attr('stroke', '#e0e0e0')
-
-      flagGroup.append('rect')
-        .attr('x', 5)
-        .attr('y', 10)
-        .attr('width', 13)
-        .attr('height', 30)
-        .attr('fill', '#006847')
-
-      flagGroup.append('rect')
-        .attr('x', 18)
-        .attr('y', 10)
-        .attr('width', 14)
-        .attr('height', 30)
-        .attr('fill', 'white')
-
-      flagGroup.append('rect')
-        .attr('x', 32)
-        .attr('y', 10)
-        .attr('width', 13)
-        .attr('height', 30)
-        .attr('fill', '#ce1126')
-
-      // Chart area
-      const chartMargin = { top: 150, right: 360, bottom: 80, left: 40 }
-      const chartWidth = width - chartMargin.left - chartMargin.right
-      const chartHeight = height - chartMargin.top - chartMargin.bottom
-
-      const chartGroup = svg.append('g')
-        .attr('id', 'chart')
-        .attr('transform', `translate(${chartMargin.left}, ${chartMargin.top})`)
+    /**
+     * Render the chart content into a chart container
+     * This demonstrates how you would render your chart into the frame's container
+     */
+    function renderChartContent(container, chartWidth, chartHeight) {
+      const g = d3.select(container)
 
       // Scales
       const yScale = d3.scaleBand()
@@ -299,8 +493,8 @@ barchart.render(chartContainer, data, visualOptions, mapping, originalData, bran
         .range([0, chartWidth])
 
       // Grid lines
-      const gridGroup = chartGroup.append('g').attr('class', 'grid')
       const ticks = [5, 10, 15, 20, 25, 30, 35]
+      const gridGroup = g.append('g').attr('class', 'grid')
 
       ticks.forEach(tick => {
         gridGroup.append('line')
@@ -313,7 +507,7 @@ barchart.render(chartContainer, data, visualOptions, mapping, originalData, bran
       })
 
       // X-axis labels
-      const xAxisGroup = chartGroup.append('g')
+      const xAxisGroup = g.append('g')
         .attr('transform', `translate(0, ${chartHeight})`)
 
       ticks.forEach(tick => {
@@ -327,7 +521,6 @@ barchart.render(chartContainer, data, visualOptions, mapping, originalData, bran
           .text(tick + '%')
       })
 
-      // X-axis title
       xAxisGroup.append('text')
         .attr('x', chartWidth / 2)
         .attr('y', 45)
@@ -338,25 +531,21 @@ barchart.render(chartContainer, data, visualOptions, mapping, originalData, bran
         .text('% de empresas que informan usar Inteligencia Artificial')
 
       // Bars and labels
-      const barsGroup = chartGroup.append('g').attr('class', 'bars')
+      const barsGroup = g.append('g').attr('class', 'bars')
 
       data.forEach(d => {
         const y = yScale(d.sector)
         const barHeight = yScale.bandwidth() / 2.2
 
-        // Large company bar (orange/yellow for highlights, blue otherwise)
         if (d.large !== null) {
-          const isHighlight = d.isHighlight
           barsGroup.append('rect')
             .attr('x', 0)
             .attr('y', y + barHeight * 0.1)
             .attr('width', xScale(d.large))
             .attr('height', barHeight)
-            .attr('fill', isHighlight ? colors.accent : colors.accent)
-            .attr('rx', 0)
+            .attr('fill', colors.accent)
         }
 
-        // Small company bar (blue)
         if (d.small !== null) {
           barsGroup.append('rect')
             .attr('x', 0)
@@ -364,10 +553,8 @@ barchart.render(chartContainer, data, visualOptions, mapping, originalData, bran
             .attr('width', xScale(d.small))
             .attr('height', barHeight)
             .attr('fill', colors.primary)
-            .attr('rx', 0)
         }
 
-        // Sector label
         const isHighlight = d.isHighlight
         barsGroup.append('text')
           .attr('x', Math.max(xScale(d.large || d.small || 0), 0) + 8)
@@ -379,7 +566,6 @@ barchart.render(chartContainer, data, visualOptions, mapping, originalData, bran
           .style('fill', colors.text)
           .text(d.sector)
 
-        // Flag icon for highlight rows
         if (isHighlight) {
           const iconX = Math.max(xScale(d.large || 0), 0) - 20
           barsGroup.append('text')
@@ -390,105 +576,36 @@ barchart.render(chartContainer, data, visualOptions, mapping, originalData, bran
             .text(d.sector.includes('UE') ? '🇪🇺' : '🇲🇽')
         }
       })
+    }
 
-      // Legend box
-      const legendX = width - 340
-      const legendY = 620
-      const legendWidth = 300
-      const legendPadding = 15
+    /**
+     * Main render function using createBrandedFrame
+     */
+    function renderBrandedChart() {
+      const targetSvg = document.getElementById('branded-chart')
 
-      const legendGroup = svg.append('g')
-        .attr('id', 'legend')
-        .attr('transform', `translate(${legendX}, ${legendY})`)
+      // Clear existing content
+      targetSvg.innerHTML = ''
 
-      // Legend background
-      legendGroup.append('rect')
-        .attr('width', legendWidth)
-        .attr('height', 140)
-        .attr('fill', 'white')
-        .attr('stroke', '#e2e8f0')
-        .attr('rx', 4)
+      // 1. Create the branded frame using the library function
+      const frame = createBrandedFrame(frameConfig)
 
-      // Legend title
-      const legendTitle = legendGroup.append('text')
-        .attr('x', legendPadding)
-        .attr('y', legendPadding + 12)
-        .style('font-family', "'Lexend Deca', sans-serif")
-        .style('font-size', '12px')
-        .style('font-weight', '600')
-        .style('fill', colors.text)
+      // 2. Copy frame content to target SVG
+      while (frame.firstChild) {
+        targetSvg.appendChild(frame.firstChild)
+      }
 
-      legendTitle.append('tspan').text('Adopción de IA en los')
-      legendTitle.append('tspan').attr('x', legendPadding).attr('dy', '1.4em').text('subsectores manufactureros')
-      legendTitle.append('tspan').attr('x', legendPadding).attr('dy', '1.4em').text('de México')
-      legendTitle.append('tspan').attr('x', legendPadding).attr('dy', '1.4em').style('font-weight', '400').text('(encuesta de 2024)')
+      // 3. Set SVG attributes
+      targetSvg.setAttribute('width', frameConfig.width)
+      targetSvg.setAttribute('height', frameConfig.height)
+      targetSvg.setAttribute('viewBox', `0 0 ${frameConfig.width} ${frameConfig.height}`)
 
-      // Legend items
-      const items = [
-        { color: colors.primary, label: 'Empresas con 11 a 250 empleados' },
-        { color: colors.accent, label: 'Empresas con más de 250 empleados' },
-      ]
+      // 4. Find the chart container and render chart content into it
+      const chartContainer = targetSvg.querySelector('#chart-container')
+      const chartWidth = parseInt(chartContainer.getAttribute('data-width'))
+      const chartHeight = parseInt(chartContainer.getAttribute('data-height'))
 
-      items.forEach((item, i) => {
-        const itemY = 95 + i * 22
-
-        legendGroup.append('rect')
-          .attr('x', legendPadding)
-          .attr('y', itemY)
-          .attr('width', 20)
-          .attr('height', 12)
-          .attr('fill', item.color)
-          .attr('rx', 2)
-
-        legendGroup.append('text')
-          .attr('x', legendPadding + 28)
-          .attr('y', itemY + 10)
-          .style('font-family', "'Lexend Deca', sans-serif")
-          .style('font-size', '10px')
-          .style('fill', colors.textMuted)
-          .text(item.label)
-      })
-
-      // Sources
-      svg.append('text')
-        .attr('x', 40)
-        .attr('y', height - 40)
-        .style('font-family', "'Lexend Deca', sans-serif")
-        .style('font-size', '12px')
-        .style('fill', colors.textLight)
-        .text('Fuentes: INEGI, Eurostat')
-
-      // Logos placeholder
-      const logosGroup = svg.append('g')
-        .attr('transform', `translate(${width - 280}, ${height - 55})`)
-
-      // Latinometrics logo placeholder
-      logosGroup.append('text')
-        .attr('x', 0)
-        .attr('y', 15)
-        .style('font-family', "'Lexend Deca', sans-serif")
-        .style('font-size', '16px')
-        .style('font-weight', '600')
-        .style('fill', '#3D7BB9')
-        .text('◉ Latinometrics')
-
-      logosGroup.append('text')
-        .attr('x', 160)
-        .attr('y', 15)
-        .style('font-family', "'Lexend Deca', sans-serif")
-        .style('font-size', '14px')
-        .style('fill', colors.textMuted)
-        .text('+ ')
-
-      // Siemens logo placeholder
-      logosGroup.append('text')
-        .attr('x', 175)
-        .attr('y', 15)
-        .style('font-family', "'Lexend Deca', sans-serif")
-        .style('font-size', '16px')
-        .style('font-weight', '500')
-        .style('fill', '#009999')
-        .text('SIEMENS')
+      renderChartContent(chartContainer, chartWidth, chartHeight)
     }
 
     // Download SVG
@@ -528,7 +645,7 @@ barchart.render(chartContainer, data, visualOptions, mapping, originalData, bran
 
       const img = new Image()
       img.onload = function() {
-        ctx.fillStyle = '#FAF5F0'
+        ctx.fillStyle = colors.background
         ctx.fillRect(0, 0, canvas.width, canvas.height)
         ctx.drawImage(img, 0, 0)
 
