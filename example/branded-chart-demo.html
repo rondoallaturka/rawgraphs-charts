@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAWGraphs Branded Chart Demo</title>
+
+  <!-- Import brand fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Lexend Deca', sans-serif;
+      background: #f0f0f0;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+    }
+
+    h1 {
+      font-family: 'Lora', serif;
+      color: #1a3a5c;
+      text-align: center;
+    }
+
+    .description {
+      max-width: 800px;
+      text-align: center;
+      color: #4a5568;
+      line-height: 1.6;
+    }
+
+    .chart-container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+
+    #branded-chart {
+      display: block;
+    }
+
+    .controls {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      font-family: 'Lexend Deca', sans-serif;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    button.primary {
+      background: #3D7BB9;
+      color: white;
+    }
+
+    button.primary:hover {
+      background: #2c5a8a;
+    }
+
+    button.secondary {
+      background: #E8A838;
+      color: white;
+    }
+
+    button.secondary:hover {
+      background: #c88c2c;
+    }
+
+    .code-section {
+      max-width: 900px;
+      width: 100%;
+    }
+
+    .code-section h2 {
+      font-family: 'Lora', serif;
+      color: #1a3a5c;
+      margin-bottom: 16px;
+    }
+
+    pre {
+      background: #1a3a5c;
+      color: #e2e8f0;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: 'Monaco', 'Consolas', monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>RAWGraphs Branded Chart Demo</h1>
+
+  <p class="description">
+    This demo shows how RAWGraphs-Charts can be customized to produce branded chart output
+    with custom fonts (Lora for titles, Lexend Deca for body text), brand colors,
+    and a consistent visual frame including title, sources, and logos.
+  </p>
+
+  <div class="controls">
+    <button class="primary" onclick="downloadSVG()">Download SVG</button>
+    <button class="secondary" onclick="downloadPNG()">Download PNG</button>
+  </div>
+
+  <div class="chart-container">
+    <svg id="branded-chart" width="1080" height="1080"></svg>
+  </div>
+
+  <div class="code-section">
+    <h2>How It Works</h2>
+    <pre><code>import { latinometricsTheme, createBrandedFrame, generateStyles } from '@rawgraphs/rawgraphs-charts/branding'
+import { barchart } from '@rawgraphs/rawgraphs-charts'
+
+// 1. Configure the branded frame
+const frameConfig = {
+  width: 1080,
+  height: 1080,
+  background: '#FAF5F0',
+  title: {
+    text: 'Sectores manufactureros\nimpulsando la IA en México',
+    style: {
+      fontFamily: "'Lora', serif",
+      fontSize: 42,
+      fontWeight: 700,
+      fill: '#1a3a5c',
+    },
+  },
+  sources: { text: 'Fuentes: INEGI, Eurostat' },
+  legend: {
+    show: true,
+    items: [
+      { color: '#3D7BB9', label: 'Empresas con 11 a 250 empleados' },
+      { color: '#E8A838', label: 'Empresas con más de 250 empleados' },
+    ],
+  },
+}
+
+// 2. Create the branded frame
+const frame = createBrandedFrame(frameConfig)
+
+// 3. Render chart into the frame's chart container
+const chartContainer = frame.querySelector('#chart-container')
+barchart.render(chartContainer, data, visualOptions, mapping, originalData, brandedStyles)</code></pre>
+  </div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    // Sample data for the chart
+    const data = [
+      { sector: 'Bebidas y tabaco', small: 9, large: 33 },
+      { sector: 'Promedio de manufactura de la UE', small: null, large: 32, isHighlight: true },
+      { sector: 'Electrónica y computadoras', small: 8, large: 28 },
+      { sector: 'Equipo eléctrico', small: 8, large: 27 },
+      { sector: 'Productos minerales no metálicos', small: 7, large: 25 },
+      { sector: 'Petróleo y carbón', small: 6, large: 24 },
+      { sector: 'Papel', small: 6, large: 22 },
+      { sector: 'Productos textiles', small: 6, large: 21 },
+      { sector: 'Equipo de transporte', small: 5, large: 20 },
+      { sector: 'Promedio de manufactura en México', small: null, large: 18, isHighlight: true },
+      { sector: 'Maquinaria', small: 5, large: 17 },
+      { sector: 'Plásticos y caucho', small: 5, large: 16 },
+      { sector: 'Comida', small: 5, large: 15 },
+      { sector: 'Químicos', small: 4, large: 14 },
+      { sector: 'Otras manufacturas', small: 4, large: 13 },
+      { sector: 'Metal fabricado', small: 4, large: 12 },
+      { sector: 'Impresión', small: 3, large: 10 },
+      { sector: 'Metales Primarios', small: 3, large: 9 },
+      { sector: 'Cuero & pieles', small: 3, large: 8 },
+      { sector: 'Fábricas textiles', small: 2, large: 7 },
+      { sector: 'Ropa y vestimenta', small: 2, large: 6 },
+      { sector: 'Muebles', small: 2, large: 5 },
+      { sector: 'Productos de madera', small: 1, large: 4 },
+    ]
+
+    // Brand colors
+    const colors = {
+      primary: '#3D7BB9',      // Blue
+      accent: '#E8A838',       // Orange
+      background: '#FAF5F0',   // Cream
+      text: '#1a3a5c',
+      textMuted: '#4a5568',
+      textLight: '#718096',
+    }
+
+    // Render the branded chart
+    function renderBrandedChart() {
+      const svg = d3.select('#branded-chart')
+      const width = 1080
+      const height = 1080
+
+      // Clear existing content
+      svg.selectAll('*').remove()
+
+      // Add font import
+      svg.append('defs').append('style')
+        .text("@import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600&family=Lora:wght@400;500;600;700&display=swap');")
+
+      // Background
+      svg.append('rect')
+        .attr('width', width)
+        .attr('height', height)
+        .attr('fill', colors.background)
+
+      // Title (Lora font)
+      const titleGroup = svg.append('g').attr('id', 'title')
+
+      titleGroup.append('text')
+        .attr('x', 40)
+        .attr('y', 55)
+        .style('font-family', "'Lora', Georgia, serif")
+        .style('font-size', '42px')
+        .style('font-weight', '700')
+        .style('fill', colors.text)
+        .text('Sectores manufactureros')
+
+      titleGroup.append('text')
+        .attr('x', 40)
+        .attr('y', 105)
+        .style('font-family', "'Lora', Georgia, serif")
+        .style('font-size', '42px')
+        .style('font-weight', '700')
+        .style('fill', colors.text)
+        .text('impulsando la IA en México')
+
+      // Flag icon placeholder (circle with flag colors)
+      const flagGroup = svg.append('g')
+        .attr('transform', `translate(${width - 90}, 40)`)
+
+      // Simple Mexico flag representation
+      flagGroup.append('circle')
+        .attr('cx', 25)
+        .attr('cy', 25)
+        .attr('r', 25)
+        .attr('fill', '#f0f0f0')
+        .attr('stroke', '#e0e0e0')
+
+      flagGroup.append('rect')
+        .attr('x', 5)
+        .attr('y', 10)
+        .attr('width', 13)
+        .attr('height', 30)
+        .attr('fill', '#006847')
+
+      flagGroup.append('rect')
+        .attr('x', 18)
+        .attr('y', 10)
+        .attr('width', 14)
+        .attr('height', 30)
+        .attr('fill', 'white')
+
+      flagGroup.append('rect')
+        .attr('x', 32)
+        .attr('y', 10)
+        .attr('width', 13)
+        .attr('height', 30)
+        .attr('fill', '#ce1126')
+
+      // Chart area
+      const chartMargin = { top: 150, right: 360, bottom: 80, left: 40 }
+      const chartWidth = width - chartMargin.left - chartMargin.right
+      const chartHeight = height - chartMargin.top - chartMargin.bottom
+
+      const chartGroup = svg.append('g')
+        .attr('id', 'chart')
+        .attr('transform', `translate(${chartMargin.left}, ${chartMargin.top})`)
+
+      // Scales
+      const yScale = d3.scaleBand()
+        .domain(data.map(d => d.sector))
+        .range([0, chartHeight])
+        .padding(0.35)
+
+      const xScale = d3.scaleLinear()
+        .domain([0, 35])
+        .range([0, chartWidth])
+
+      // Grid lines
+      const gridGroup = chartGroup.append('g').attr('class', 'grid')
+      const ticks = [5, 10, 15, 20, 25, 30, 35]
+
+      ticks.forEach(tick => {
+        gridGroup.append('line')
+          .attr('x1', xScale(tick))
+          .attr('x2', xScale(tick))
+          .attr('y1', 0)
+          .attr('y2', chartHeight)
+          .attr('stroke', '#e2e8f0')
+          .attr('stroke-dasharray', '2,2')
+      })
+
+      // X-axis labels
+      const xAxisGroup = chartGroup.append('g')
+        .attr('transform', `translate(0, ${chartHeight})`)
+
+      ticks.forEach(tick => {
+        xAxisGroup.append('text')
+          .attr('x', xScale(tick))
+          .attr('y', 20)
+          .attr('text-anchor', 'middle')
+          .style('font-family', "'Lexend Deca', sans-serif")
+          .style('font-size', '10px')
+          .style('fill', colors.textMuted)
+          .text(tick + '%')
+      })
+
+      // X-axis title
+      xAxisGroup.append('text')
+        .attr('x', chartWidth / 2)
+        .attr('y', 45)
+        .attr('text-anchor', 'middle')
+        .style('font-family', "'Lexend Deca', sans-serif")
+        .style('font-size', '11px')
+        .style('fill', colors.textMuted)
+        .text('% de empresas que informan usar Inteligencia Artificial')
+
+      // Bars and labels
+      const barsGroup = chartGroup.append('g').attr('class', 'bars')
+
+      data.forEach(d => {
+        const y = yScale(d.sector)
+        const barHeight = yScale.bandwidth() / 2.2
+
+        // Large company bar (orange/yellow for highlights, blue otherwise)
+        if (d.large !== null) {
+          const isHighlight = d.isHighlight
+          barsGroup.append('rect')
+            .attr('x', 0)
+            .attr('y', y + barHeight * 0.1)
+            .attr('width', xScale(d.large))
+            .attr('height', barHeight)
+            .attr('fill', isHighlight ? colors.accent : colors.accent)
+            .attr('rx', 0)
+        }
+
+        // Small company bar (blue)
+        if (d.small !== null) {
+          barsGroup.append('rect')
+            .attr('x', 0)
+            .attr('y', y + barHeight * 1.1)
+            .attr('width', xScale(d.small))
+            .attr('height', barHeight)
+            .attr('fill', colors.primary)
+            .attr('rx', 0)
+        }
+
+        // Sector label
+        const isHighlight = d.isHighlight
+        barsGroup.append('text')
+          .attr('x', Math.max(xScale(d.large || d.small || 0), 0) + 8)
+          .attr('y', y + yScale.bandwidth() / 2)
+          .attr('dominant-baseline', 'middle')
+          .style('font-family', "'Lexend Deca', sans-serif")
+          .style('font-size', '11px')
+          .style('font-weight', isHighlight ? '600' : '400')
+          .style('fill', colors.text)
+          .text(d.sector)
+
+        // Flag icon for highlight rows
+        if (isHighlight) {
+          const iconX = Math.max(xScale(d.large || 0), 0) - 20
+          barsGroup.append('text')
+            .attr('x', iconX)
+            .attr('y', y + yScale.bandwidth() / 2)
+            .attr('dominant-baseline', 'middle')
+            .style('font-size', '14px')
+            .text(d.sector.includes('UE') ? '🇪🇺' : '🇲🇽')
+        }
+      })
+
+      // Legend box
+      const legendX = width - 340
+      const legendY = 620
+      const legendWidth = 300
+      const legendPadding = 15
+
+      const legendGroup = svg.append('g')
+        .attr('id', 'legend')
+        .attr('transform', `translate(${legendX}, ${legendY})`)
+
+      // Legend background
+      legendGroup.append('rect')
+        .attr('width', legendWidth)
+        .attr('height', 140)
+        .attr('fill', 'white')
+        .attr('stroke', '#e2e8f0')
+        .attr('rx', 4)
+
+      // Legend title
+      const legendTitle = legendGroup.append('text')
+        .attr('x', legendPadding)
+        .attr('y', legendPadding + 12)
+        .style('font-family', "'Lexend Deca', sans-serif")
+        .style('font-size', '12px')
+        .style('font-weight', '600')
+        .style('fill', colors.text)
+
+      legendTitle.append('tspan').text('Adopción de IA en los')
+      legendTitle.append('tspan').attr('x', legendPadding).attr('dy', '1.4em').text('subsectores manufactureros')
+      legendTitle.append('tspan').attr('x', legendPadding).attr('dy', '1.4em').text('de México')
+      legendTitle.append('tspan').attr('x', legendPadding).attr('dy', '1.4em').style('font-weight', '400').text('(encuesta de 2024)')
+
+      // Legend items
+      const items = [
+        { color: colors.primary, label: 'Empresas con 11 a 250 empleados' },
+        { color: colors.accent, label: 'Empresas con más de 250 empleados' },
+      ]
+
+      items.forEach((item, i) => {
+        const itemY = 95 + i * 22
+
+        legendGroup.append('rect')
+          .attr('x', legendPadding)
+          .attr('y', itemY)
+          .attr('width', 20)
+          .attr('height', 12)
+          .attr('fill', item.color)
+          .attr('rx', 2)
+
+        legendGroup.append('text')
+          .attr('x', legendPadding + 28)
+          .attr('y', itemY + 10)
+          .style('font-family', "'Lexend Deca', sans-serif")
+          .style('font-size', '10px')
+          .style('fill', colors.textMuted)
+          .text(item.label)
+      })
+
+      // Sources
+      svg.append('text')
+        .attr('x', 40)
+        .attr('y', height - 40)
+        .style('font-family', "'Lexend Deca', sans-serif")
+        .style('font-size', '12px')
+        .style('fill', colors.textLight)
+        .text('Fuentes: INEGI, Eurostat')
+
+      // Logos placeholder
+      const logosGroup = svg.append('g')
+        .attr('transform', `translate(${width - 280}, ${height - 55})`)
+
+      // Latinometrics logo placeholder
+      logosGroup.append('text')
+        .attr('x', 0)
+        .attr('y', 15)
+        .style('font-family', "'Lexend Deca', sans-serif")
+        .style('font-size', '16px')
+        .style('font-weight', '600')
+        .style('fill', '#3D7BB9')
+        .text('◉ Latinometrics')
+
+      logosGroup.append('text')
+        .attr('x', 160)
+        .attr('y', 15)
+        .style('font-family', "'Lexend Deca', sans-serif")
+        .style('font-size', '14px')
+        .style('fill', colors.textMuted)
+        .text('+ ')
+
+      // Siemens logo placeholder
+      logosGroup.append('text')
+        .attr('x', 175)
+        .attr('y', 15)
+        .style('font-family', "'Lexend Deca', sans-serif")
+        .style('font-size', '16px')
+        .style('font-weight', '500')
+        .style('fill', '#009999')
+        .text('SIEMENS')
+    }
+
+    // Download SVG
+    function downloadSVG() {
+      const svg = document.getElementById('branded-chart')
+      const serializer = new XMLSerializer()
+      let source = serializer.serializeToString(svg)
+
+      // Add XML declaration
+      source = '<?xml version="1.0" encoding="UTF-8"?>\n' + source
+
+      const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'branded-chart.svg'
+      link.click()
+
+      URL.revokeObjectURL(url)
+    }
+
+    // Download PNG
+    function downloadPNG() {
+      const svg = document.getElementById('branded-chart')
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+
+      canvas.width = 1080 * 2  // 2x for retina
+      canvas.height = 1080 * 2
+      ctx.scale(2, 2)
+
+      const serializer = new XMLSerializer()
+      const source = serializer.serializeToString(svg)
+      const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+
+      const img = new Image()
+      img.onload = function() {
+        ctx.fillStyle = '#FAF5F0'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.drawImage(img, 0, 0)
+
+        canvas.toBlob(function(blob) {
+          const pngUrl = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = pngUrl
+          link.download = 'branded-chart.png'
+          link.click()
+          URL.revokeObjectURL(pngUrl)
+        }, 'image/png')
+
+        URL.revokeObjectURL(url)
+      }
+      img.src = url
+    }
+
+    // Render on load
+    renderBrandedChart()
+  </script>
+</body>
+</html>
