@@ -1,0 +1,152 @@
+/**
+ * Branded Chart Styles
+ *
+ * This CSS file defines the base styles for branded chart output.
+ * Uses Lora for titles, Lexend Deca for all other text.
+ *
+ * Import fonts in your HTML:
+ * <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
+ */
+
+/* Title typography - Lora */
+.chartTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 42px;
+  fill: #1a3a5c;
+  font-weight: 700;
+}
+
+.chartSubtitle {
+  font-family: 'Lexend Deca', 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  fill: #4a5568;
+  font-weight: 400;
+}
+
+/* Axis labels - Lexend Deca */
+.axisLabel {
+  font-family: 'Lexend Deca', 'Helvetica Neue', sans-serif;
+  font-size: 11px;
+  fill: #2d3748;
+  font-weight: 500;
+}
+
+.axisLine {
+  stroke: #cbd5e0;
+  stroke-width: 1px;
+}
+
+/* Tick labels */
+.tickLabel {
+  font-family: 'Lexend Deca', 'Helvetica Neue', sans-serif;
+  font-size: 10px;
+  fill: #4a5568;
+  font-weight: 400;
+}
+
+/* Primary data labels */
+.labelPrimary {
+  font-family: 'Lexend Deca', 'Helvetica Neue', sans-serif;
+  font-size: 10px;
+  fill: #2d3748;
+  font-weight: 500;
+}
+
+/* Secondary/muted labels */
+.labelSecondary {
+  font-family: 'Lexend Deca', 'Helvetica Neue', sans-serif;
+  font-size: 10px;
+  fill: #718096;
+  font-weight: 400;
+}
+
+.labelItalic {
+  font-family: 'Lexend Deca', 'Helvetica Neue', sans-serif;
+  font-size: 10px;
+  fill: #718096;
+  font-weight: 400;
+  font-style: italic;
+}
+
+/* Series labels */
+.seriesLabel {
+  font-family: 'Lexend Deca', 'Helvetica Neue', sans-serif;
+  font-size: 12px;
+  fill: #2d3748;
+  font-weight: 600;
+  dominant-baseline: hanging;
+}
+
+/* Category labels (bar chart) */
+.categoryLabel {
+  font-family: 'Lexend Deca', 'Helvetica Neue', sans-serif;
+  font-size: 12px;
+  fill: #2d3748;
+  font-weight: 400;
+}
+
+/* Highlighted category (e.g., "Promedio de manufactura") */
+.categoryLabelHighlight {
+  font-family: 'Lexend Deca', 'Helvetica Neue', sans-serif;
+  font-size: 12px;
+  fill: #2d3748;
+  font-weight: 600;
+}
+
+/* Source text at bottom */
+.sourceText {
+  font-family: 'Lexend Deca', 'Helvetica Neue', sans-serif;
+  font-size: 12px;
+  fill: #718096;
+  font-weight: 400;
+}
+
+/* Legend styles */
+.legendTitle {
+  font-family: 'Lexend Deca', 'Helvetica Neue', sans-serif;
+  font-size: 12px;
+  fill: #2d3748;
+  font-weight: 600;
+}
+
+.legendLabel {
+  font-family: 'Lexend Deca', 'Helvetica Neue', sans-serif;
+  font-size: 11px;
+  fill: #4a5568;
+  font-weight: 400;
+}
+
+/* Label outline for readability */
+.labelOutline {
+  stroke-width: 2px;
+  paint-order: stroke;
+  stroke: white;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Grid lines */
+.gridLine {
+  stroke: #e2e8f0;
+  stroke-width: 0.5px;
+  stroke-dasharray: 2,2;
+}
+
+/* Percentage label on x-axis */
+.percentageLabel {
+  font-family: 'Lexend Deca', 'Helvetica Neue', sans-serif;
+  font-size: 10px;
+  fill: #4a5568;
+  font-weight: 400;
+}
+
+/* Frame elements */
+.frameBorder {
+  fill: none;
+  stroke: #e2e8f0;
+  stroke-width: 1px;
+}
+
+.frameBackground {
+  fill: #FAF5F0;
+}
